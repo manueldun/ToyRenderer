@@ -212,6 +212,4 @@ foreach(sponzaFile ${sponzaFiles})
                     ${CMAKE_CURRENT_LIST_DIR}/${sponzaPath}/${sponzaFile}
                     ${PROJECT_BINARY_DIR}/${sponzaPath}/${sponzaFile}
     )
-message("copying from " ${CMAKE_CURRENT_LIST_DIR}/${sponzaPath}/${sponzaFile})
-message("copying to " ${PROJECT_BINARY_DIR}/${sponzaPath}/${sponzaFile})
 endforeach()
