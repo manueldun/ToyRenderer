@@ -4,7 +4,7 @@ project(ToyRenderer)
 
 add_subdirectory(Renderer)
 
-add_executable(Renderer main.cpp)
+add_executable(ToyRenderer main.cpp)
 
 
 set(CMAKE_CXX_STANDARD 20)
@@ -14,10 +14,8 @@ if(MSVC)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++20")
 endif(MSVC)
 
-target_include_directories(Renderer PUBLIC
+target_include_directories(ToyRenderer PUBLIC
     ${CMAKE_CURRENT_LIST_DIR}/Renderer
 )
 
-target_link_libraries(Renderer RendererLib)
-
-set(currentDir ${} PARENT_SCOPE)
+target_link_libraries(ToyRenderer RendererLib)

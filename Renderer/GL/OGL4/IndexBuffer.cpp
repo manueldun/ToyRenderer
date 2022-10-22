@@ -1,7 +1,7 @@
 #include"IndexBuffer.h"
 #include<glad/glad.h>
 
-IndexBuffer::IndexBuffer(const void* data, const size_t count) :m_count(count)
+IndexBuffer::IndexBuffer(const void* data, const std::size_t count) :m_count(count)
 {
 	glGenBuffers(1, &m_VBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_VBO);
@@ -10,8 +10,8 @@ IndexBuffer::IndexBuffer(const void* data, const size_t count) :m_count(count)
 
 IndexBuffer::IndexBuffer(
 	const void* data, 
-	const size_t count, 
-	const size_t bytesPerElement=sizeof(unsigned int))
+	const std::size_t count, 
+	const std::size_t bytesPerElement=sizeof(unsigned int))
 	:m_count(count)
 {
 	glGenBuffers(1, &m_VBO);

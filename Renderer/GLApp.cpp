@@ -11,15 +11,9 @@
 #include"GL/ConvertToMeshes.h"
 #include"GL/Renderer.h"
 
-// Define these only in *one* .cc file.
-#define TINYGLTF_IMPLEMENTATION
-#define STB_IMAGE_IMPLEMENTATION
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#define STBI_MSC_SECURE_CRT
-// #define TINYGLTF_NOEXCEPTION // optional. disable exception handling.
-#include"tinygltf/tiny_gltf.h" 
 
-#include"imGUI/ImGuiFileDialog.h"
+#include"tiny_gltf.h" 
+
 
 std::vector<std::function<void(int, int, int)>> GLApp::m_mouseButtonCallbacks;
 

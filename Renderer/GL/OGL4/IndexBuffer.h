@@ -1,11 +1,13 @@
 #pragma once
+
+#include <cstddef>
 class IndexBuffer {
 public:
-	IndexBuffer(const void* data, const size_t count);
+	IndexBuffer(const void* data, const std::size_t count);
 	IndexBuffer(
 		const void* data, 
-		const size_t count,
-		const size_t bytesPerElement
+		const std::size_t count,
+		const std::size_t bytesPerElement
 	);
 	IndexBuffer();
 	~IndexBuffer();
@@ -13,6 +15,6 @@ public:
 	unsigned int getCount()const;
 private:
 	unsigned int m_VBO;
-	size_t m_count;
+	std::size_t m_count;
 
 };

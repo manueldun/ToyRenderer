@@ -5,6 +5,11 @@
 #include"Layout.h"
 #include"PBRMaterial.h"
 #include"Material.h"
+#define TINYGLTF_IMPLEMENTATION
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include"tiny_gltf.h"
+#include"Utils.h"
 std::vector<Mesh> convertToMeshes(const std::vector<Utils::OBJData>& objData, const std::vector<std::shared_ptr<Shader>>& shaders)
 {
 	std::vector<Mesh> outputMeshes;
