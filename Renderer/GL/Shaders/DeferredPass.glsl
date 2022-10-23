@@ -102,7 +102,7 @@ void main()
     
     vec3 indirectFlux=vec3(0.0f);
     const float sampleSpan = 0.2f;
-    for(unsigned int i=0;i<50;i++)
+    for(int i=0;i<50;i++)
     {
 
     

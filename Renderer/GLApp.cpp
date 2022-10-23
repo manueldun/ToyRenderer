@@ -34,6 +34,9 @@ void GLApp::init()
 	if (!glfwInit()) {
 		throw std::runtime_error("Error initializing glfw!");
 	}
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	m_window = glfwCreateWindow(m_windowWidth, m_windowHeight, "Hello World", NULL, NULL);
 	if (!m_window)
 	{
@@ -100,7 +103,7 @@ void GLApp::loop()
 		std::string warn;
 
 
-		bool ret = loader.LoadASCIIFromFile(&model, &err, &warn, "Assets/gltfSponza/sponza.gltf");
+		bool ret = loader.LoadASCIIFromFile(&model, &err, &warn, "Assets/gltfSponza/Sponza.gltf");
 
 		if (!warn.empty()) {
 			printf("Warn: %s\n", warn.c_str());
