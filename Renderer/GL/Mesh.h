@@ -1,29 +1,24 @@
 #pragma once
 #include<vector>
-#include<string>
 #include<memory>
-#include"Layout.h"
-
-#include"OGL4/VertexArray.h"
-#include"OGL4/VertexBuffer.h"
+#include"VertexArray.h"
 #include"SubMesh.h"
-
 class Mesh {
 public:
-
 	Mesh(
-		const std::vector<SubMesh>& subMesh,
-		const std::vector<float>& vertexBufferArray);
-	Mesh(
-		const std::vector<SubMesh>& subMesh,
-		const std::shared_ptr<VertexArray>& vertexArray);
-	std::shared_ptr<VertexArray> getVertexArray()const;
+		std::vector<SubMesh> subMeshes,
+		std::vector<std::vector<float>> vertexBufferArray);
 	std::vector<SubMesh> getSubMeshes()const;
+	void loadToGPU();
+	void bind() const;
 private:
-
-	std::shared_ptr<VertexArray> m_vertexArray;
-	std::shared_ptr<VertexBuffer> m_vertexBuffer;
 	std::vector<SubMesh> m_subMeshes;
+	const std::vector<std::vector<float>> m_vertexBufferArray;
+
+	bool inGPU = false;
+	//GPU
+	std::shared_ptr<VertexArray> m_vertexArray;
+
 };
 
 

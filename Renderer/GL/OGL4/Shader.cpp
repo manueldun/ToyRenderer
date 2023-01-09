@@ -27,6 +27,7 @@ void Shader::bind() const
 Shader::Shader(const char* path)
 {
 	Pipeline pipeline = separateShaders(path);
+	std::cout << "Compiling " << path << std::endl;
 	compileAndLink(pipeline);
 }
 /*

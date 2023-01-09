@@ -19,5 +19,3 @@ target_include_directories(Renderer PUBLIC
 )
 
 target_link_libraries(Renderer RendererLib)
-
-set(currentDir ${} PARENT_SCOPE)

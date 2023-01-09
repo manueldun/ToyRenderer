@@ -1,18 +1,21 @@
 #include "Renderer.h"
 #include<glad/glad.h>
 #include<vector>
-#include"Mesh.h"
 #include"imgui.h"
 #include<glm/gtc/type_ptr.hpp>
 #include<cmath>
 #include<numbers>
 #include<iostream>
 #include <cstdlib>
+#include"Mesh.h"
+#include"SubMesh.h"
+bool Renderer::initialized = false;
+std::unordered_map<ShaderType, std::shared_ptr<Shader>> Renderer::shaders;
 Renderer::Renderer(unsigned int width, unsigned int height)
 	:m_viewportWidth(width),
-	m_viewportHeight(height),
-	RandomTextureData(generateRandomSamplePoints(100))
+	m_viewportHeight(height)
 {
+	Renderer::initialized = true;
 	clearAll();
 }
 void Renderer::render(
@@ -44,40 +47,44 @@ void Renderer::render(
 {
 
 	Framebuffer::unbind();
-	std::vector<SubMesh> subMeshes = mesh.getSubMeshes();
+	//std::vector<SubMesh> subMeshes = mesh.getSubMeshes();
+	std::vector<SubMesh> subMeshes;
 	glViewport(0, 0, m_viewportWidth, m_viewportHeight);
+
+	const std::shared_ptr<Shader> pbr_shader = Renderer::getShader(ShaderType::PBR_SHADER);
 	for (const auto& subMesh : subMeshes)
 	{
-		mesh.getVertexArray()->bind();
+		//mesh.bind();
+		pbr_shader->bind();
+		subMesh.getMaterial().setMaterialUniforms(pbr_shader);
 
-		subMesh.getMaterial()->setMaterialUniforms(subMesh.getMaterial()->getShader());
-
-
-		int projectionMatLocation = subMesh.getMaterial()->getShader()->getUniformLocation("projection");
+		int projectionMatLocation = pbr_shader->getUniformLocation("projection");
 		glUniformMatrix4fv(projectionMatLocation, 1, false, p);
 
-		int viewMatLocation = subMesh.getMaterial()->getShader()->getUniformLocation("view");
+		int viewMatLocation = pbr_shader->getUniformLocation("view");
 		glUniformMatrix4fv(viewMatLocation, 1, false, v);
 
-		int directionalLightLocation = subMesh.getMaterial()->getShader()->getUniformLocation("directionalLight");//
+		//int viewMatLocation = Renderer::getShader(ShaderType::PBR_SHADER)->getUniformLocation("directionalLight");
+
+		int cameraPosLocation = pbr_shader->getUniformLocation("cameraPosition");
+		glUniform3fv(cameraPosLocation, 1, cameraPosition);
 
 
-		int cameraPositionLocation = subMesh.getMaterial()->getShader()->getUniformLocation("cameraPosition");
-		glUniform3fv(cameraPositionLocation, 1, cameraPosition);
-
-
-		int shadowmapProjectionLocation = subMesh.getMaterial()->getShader()->getUniformLocation("shadowmapProjection");
+		int shadowmapProjectionLocation = pbr_shader->getUniformLocation("shadowmapProjection");
 		glUniformMatrix4fv(shadowmapProjectionLocation, 1, false, lightMatrix);
 
-		int shadowMapLocation = subMesh.getMaterial()->getShader()->getUniformLocation("shadowmap");
+
+		int cameraPositionLocation = pbr_shader->getUniformLocation("cameraPosition");
 		ShadowDepth->bind(3);
-		glUniform1i(shadowMapLocation, 3);
+		glUniform1i(cameraPositionLocation, 3);
 
 		IndirectLightTexture->bind(4);
-		glUniform1i(subMesh.getMaterial()->getUniformLocation("indirectLight"), 4);
-		subMesh.getIndexBufferID()->bind();
 
-		glDrawElements(GL_TRIANGLES, subMesh.getIndexBufferID()->getCount(), GL_UNSIGNED_SHORT, 0);
+		int shadowMapLocation = pbr_shader->getUniformLocation("cameraPosition");
+		glUniform1i(shadowMapLocation, 4);
+		subMesh.bind();
+
+		glDrawElements(GL_TRIANGLES, subMesh.getCount(), GL_UNSIGNED_SHORT, 0);
 	}
 }
 
@@ -86,7 +93,7 @@ void Renderer::renderShadowMap(
 	const Mesh& mesh) const
 {
 
-	const std::shared_ptr<Shader> rsmShader = ShaderType.at("Reflective ShadowMap");
+	const std::shared_ptr<Shader> rsmShader = Renderer::getShader(ShaderType::REFLECTIVE_SHADOWMAP);
 	ShadowMapFramebuffer->bind();
 	unsigned int h = PositionTexture->getHeight();
 	unsigned int w = PositionTexture->getWidth();
@@ -94,33 +101,33 @@ void Renderer::renderShadowMap(
 	std::vector<SubMesh> subMeshes = mesh.getSubMeshes();
 	for (const auto& subMesh : subMeshes)
 	{
-		mesh.getVertexArray()->bind();
+		mesh.bind();
 
-		subMesh.getIndexBufferID()->bind();
+		subMesh.bind();
 		rsmShader->bind();
 		glUniformMatrix4fv(rsmShader->getUniformLocation("projection"), 1, false, p);
 
-		subMesh.getMaterial()->getAlbedoTexture()->bind(0);
+		subMesh.getMaterial().getAlbedoTexture().bind(0);
 		glUniform1i(rsmShader->getUniformLocation("albedoSampler"), 0);
 
-		subMesh.getMaterial()->getNormalTexture()->bind(1);
+		subMesh.getMaterial().getNormalTexture().bind(1);
 		glUniform1i(rsmShader->getUniformLocation("normalMapSampler"), 1);
 
-		std::vector<float> albedoConstant = subMesh.getMaterial()->getAlbedoConstants();
+		std::vector<float> albedoConstant = subMesh.getMaterial().getAlbedoConstants();
 		glUniform3fv(rsmShader->getUniformLocation("albedoConstant"), 1, albedoConstant.data());
 
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
 		glEnableVertexAttribArray(2);
 		glEnableVertexAttribArray(3);
-		glDrawElements(GL_TRIANGLES, subMesh.getIndexBufferID()->getCount(), GL_UNSIGNED_SHORT, 0);
+		glDrawElements(GL_TRIANGLES, subMesh.getCount(), GL_UNSIGNED_SHORT, 0);
 	}
 }
 
 void Renderer::renderRMS(const float* projection, const float* view, const float* lightProjection, const Mesh& mesh, float span) const
 {
 
-	const std::shared_ptr<Shader> indirectLightShader = ShaderType.at("Indirect Pass");
+	const std::shared_ptr<Shader> indirectLightShader = Renderer::getShader(ShaderType::INDIRECT_PASS);
 	IndirectLighFramebuffer->bind();
 	unsigned int h = IndirectLightTexture->getHeight();
 	unsigned int w = IndirectLightTexture->getWidth();
@@ -128,21 +135,21 @@ void Renderer::renderRMS(const float* projection, const float* view, const float
 	std::vector<SubMesh> subMeshes = mesh.getSubMeshes();
 	for (const auto& subMesh : subMeshes)
 	{
-		mesh.getVertexArray()->bind();
+		mesh.bind();
 
-		subMesh.getIndexBufferID()->bind();
+		subMesh.bind();
 		indirectLightShader->bind();
 		glUniformMatrix4fv(indirectLightShader->getUniformLocation("projection"), 1, false, projection);
 		glUniformMatrix4fv(indirectLightShader->getUniformLocation("view"), 1, false, view);
 		glUniformMatrix4fv(indirectLightShader->getUniformLocation("lightProjection"), 1, false, lightProjection);
 
-		subMesh.getMaterial()->getAlbedoTexture()->bind(0);
+		subMesh.getMaterial().getAlbedoTexture().bind(0);
 		glUniform1i(indirectLightShader->getUniformLocation("albedoTexture"), 0);
 
-		subMesh.getMaterial()->getNormalTexture()->bind(1);
+		subMesh.getMaterial().getNormalTexture().bind(1);
 		glUniform1i(indirectLightShader->getUniformLocation("normalTexture"), 1);
 
-		std::vector<float> albedoConstant = subMesh.getMaterial()->getAlbedoConstants();
+		std::vector<float> albedoConstant = subMesh.getMaterial().getAlbedoConstants();
 		glUniform3fv(indirectLightShader->getUniformLocation("albedoConstant"), 1, albedoConstant.data());
 
 		PositionTexture->bind(2);
@@ -163,30 +170,29 @@ void Renderer::renderRMS(const float* projection, const float* view, const float
 		glEnableVertexAttribArray(1);
 		glEnableVertexAttribArray(2);
 		glEnableVertexAttribArray(3);
-		glDrawElements(GL_TRIANGLES, subMesh.getIndexBufferID()->getCount(), GL_UNSIGNED_SHORT, 0);
+		glDrawElements(GL_TRIANGLES, subMesh.getCount(), GL_UNSIGNED_SHORT, 0);
 	}
 }
 
 void Renderer::renderGBuffer(const float* projection, const float* view, const Mesh& mesh) const
 {
 
-	const std::shared_ptr<Shader> gBufferShader = ShaderType.at("GBuffer");
+	const std::shared_ptr<Shader> gBufferShader = Renderer::getShader(ShaderType::GBUFFER);
 	GBufferFramebuffer->bind();
 	std::vector<SubMesh> subMeshes = mesh.getSubMeshes();
 	glViewport(0, 0, m_viewportWidth, m_viewportHeight);
 	for (const auto& subMesh : subMeshes)
 	{
-		mesh.getVertexArray()->bind();
-
-		subMesh.getMaterial()->setMaterialUniforms(gBufferShader);
+		mesh.bind();
+		gBufferShader->bind();
+		subMesh.getMaterial().setMaterialUniforms(gBufferShader);
 
 		glUniformMatrix4fv(gBufferShader->getUniformLocation("projection"), 1, false, projection);
 		glUniformMatrix4fv(gBufferShader->getUniformLocation("view"), 1, false, view);
 
 
-		subMesh.getIndexBufferID()->bind();
 
-		glDrawElements(GL_TRIANGLES, subMesh.getIndexBufferID()->getCount(), GL_UNSIGNED_SHORT, 0);
+		glDrawElements(GL_TRIANGLES, subMesh.getCount(), GL_UNSIGNED_SHORT, 0);
 	}
 }
 
@@ -196,7 +202,7 @@ void Renderer::renderDeferredPass(
 	const float* cameraPosition) const
 {
 	Framebuffer::unbind();
-	std::shared_ptr<Shader> deferredPassShader = ShaderType.at("Deferred Pass");
+	std::shared_ptr<Shader> deferredPassShader = Renderer::getShader(ShaderType::DEFFERRED_PASS);
 	deferredPassShader->bind();
 	glUniformMatrix4fv(deferredPassShader->getUniformLocation("lightMatrix"), 1, false, lightMatrix);
 	GBufferPosition->bind(0);
@@ -224,16 +230,21 @@ void Renderer::renderDeferredPass(
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 }
 
-std::shared_ptr<const Texture> Renderer::generateRandomSamplePoints(unsigned int numOfPoints)
+std::shared_ptr<Shader> Renderer::getShader(ShaderType shaderType)
 {
-	std::vector<unsigned short> data;
-	data.reserve(static_cast<unsigned long long>(numOfPoints) * 2);
-	for (unsigned int i = 0; i < numOfPoints * 2; ++i)
+	if (shaders.empty() && Renderer::initialized)
 	{
-		data.push_back(std::rand());
+		shaders = std::unordered_map<ShaderType, std::shared_ptr<Shader>>{
+		{ REFLECTIVE_SHADOWMAP, std::make_shared<Shader>("./Shaders/DepthShader.glsl") },
+		{ INDIRECT_PASS,std::make_shared<Shader>("./Shaders/IndirectPass.glsl") },
+		{ PBR_SHADER,std::make_shared<Shader>("./Shaders/PBRShader.glsl") },
+		{ GBUFFER,std::make_shared<Shader>("./Shaders/GBuffer.glsl") },
+		{ DEFFERRED_PASS,std::make_shared<Shader>("./Shaders/DeferredPass.glsl") }
+		};
 	}
-	return std::make_shared<const Texture>(TextureData(numOfPoints, 1, 1, 2, data));
+	return shaders.at(shaderType);
 }
+
 
 
 

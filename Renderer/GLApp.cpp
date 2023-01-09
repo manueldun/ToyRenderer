@@ -10,6 +10,7 @@
 #include"Utils/Utils.h"
 #include"GL/ConvertToMeshes.h"
 #include"GL/Renderer.h"
+#include"VertexArray.h"
 
 // Define these only in *one* .cc file.
 #define TINYGLTF_IMPLEMENTATION
@@ -40,6 +41,10 @@ void GLApp::init()
 	if (!glfwInit()) {
 		throw std::runtime_error("Error initializing glfw!");
 	}
+
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	m_window = glfwCreateWindow(m_windowWidth, m_windowHeight, "Hello World", NULL, NULL);
 	if (!m_window)
 	{
@@ -121,8 +126,13 @@ void GLApp::loop()
 			throw std::runtime_error("Failed to `parse gltf");
 		}
 
-		meshes = convertToMeshes(model, renderer.ShaderType.at("PBR Shader"));
+		meshes = convertToMeshes(model);
+		for (auto& mesh : meshes)
+		{
+			mesh.loadToGPU();
+		}
 	}
+
 
 
 	glm::mat4 projectionMatrix = glm::perspective(glm::pi<float>() / 3.0f, (float)m_windowWidth / (float)m_windowHeight, 0.1f, 10000.f);

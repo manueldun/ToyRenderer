@@ -116,29 +116,7 @@ Texture::Texture(const float red, const float green, const float blue)
 
 }
 
-Texture::Texture(const TextureData& data)
-{
-	m_width = data.Width;
-	m_height = data.Height;
-	m_depth = data.Depth;
-	m_channels = data.NumOfChannels;
-	glGenTextures(1, &m_textureID);
 
-	if (data.NumOfChannels == 2 && m_height == 1 && m_depth == 1)
-	{
-		glBindTexture(GL_TEXTURE_1D, m_textureID);
-		glTexImage1D(GL_TEXTURE_1D, 0, GL_RG16, data.Width, 0, GL_RG, GL_UNSIGNED_SHORT, data.Data.data());
-
-		glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	}
-	else
-	{
-		throw std::runtime_error("texture type not implemented");
-	}
-}
 Texture::~Texture()
 {
 	glDeleteTextures(1, &m_textureID);
@@ -225,22 +203,3 @@ void Texture::loadTexture(std::string path)
 
 }
 
-TextureData::TextureData(
-	const unsigned int width,
-	const unsigned int height,
-	const unsigned int depth,
-	const unsigned int numsOfChannels,
-	const std::vector<unsigned short> data)
-	:
-	Width(width),
-	Height(height),
-	Depth(depth),
-	Data(data),
-	NumOfChannels(numsOfChannels)
-{
-	if (data.size() != static_cast<unsigned long long>(height) * static_cast<unsigned long long>(width) * static_cast<unsigned long long>(numsOfChannels))
-	{
-		throw std::runtime_error("incorrect data size");
-	}
-
-}

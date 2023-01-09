@@ -72,9 +72,10 @@ add_library(RendererLib STATIC
     ${CMAKE_CURRENT_LIST_DIR}/GL/OGL4/Texture.h
     ${CMAKE_CURRENT_LIST_DIR}/GL/OGL4/VertexArray.cpp
     ${CMAKE_CURRENT_LIST_DIR}/GL/OGL4/VertexArray.h
-    ${CMAKE_CURRENT_LIST_DIR}/GL/OGL4/VertexBuffer.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/GL/OGL4/VertexBuffer.h
-    
+    "GL/VertexBuffer.cpp"
+    "GL/VertexBuffer.h"
+    "GL/RawTexture.cpp"
+    "GL/RawTexture.h"
 )
 
 target_include_directories(RendererLib PUBLIC
@@ -120,9 +121,12 @@ set(shaders
 
 
 
+
 foreach(shader ${shaders})
-    add_custom_command(
+        add_custom_command(
             TARGET RendererLib POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E rm
+                    ${PROJECT_BINARY_DIR}/Shaders/${shader}
             COMMAND ${CMAKE_COMMAND} -E copy
                     ${CMAKE_CURRENT_LIST_DIR}/${shaderPath}/${shader}
                     ${PROJECT_BINARY_DIR}/Shaders/${shader}

@@ -1,10 +1,8 @@
 #include"ConvertToMeshes.h"
-#include<algorithm>
-#include<iostream>
-#include<string>
-#include"Layout.h"
-#include"PBRMaterial.h"
+#include"SubMesh.h"
 #include"Material.h"
+#include"PBRMaterial.h"
+//deprecated
 std::vector<Mesh> convertToMeshes(const std::vector<Utils::OBJData>& objData, const std::vector<std::shared_ptr<Shader>>& shaders)
 {
 	std::vector<Mesh> outputMeshes;
@@ -70,11 +68,12 @@ std::vector<Mesh> convertToMeshes(const std::vector<Utils::OBJData>& objData, co
 				std::make_shared<IndexBuffer>(
 					subOBJ.getIndexBuffer().data(),
 					subOBJ.getIndexBuffer().size());
-			subMeshes.push_back(SubMesh(indexBuffer, material));
+			//deprecated
+			//subMeshes.push_back(SubMesh(indexBuffer, material));
 
 		}
-
-		outputMeshes.push_back(Mesh(subMeshes, obj.getVertexBuffer()));
+		//deprecated
+		//outputMeshes.push_back(Mesh(subMeshes, obj.getVertexBuffer()));
 
 
 	}
@@ -82,9 +81,9 @@ std::vector<Mesh> convertToMeshes(const std::vector<Utils::OBJData>& objData, co
 	return outputMeshes;
 }
 
-std::vector<Mesh> convertToMeshes(const tinygltf::Model& model, const std::shared_ptr<Shader>& shader)
+std::vector<Mesh> convertToMeshes(const tinygltf::Model& model)
 {
-	std::vector<Mesh> meshBuffers = separateIndicesFromVertexData(model, shader);
+	std::vector<Mesh> meshBuffers = separateIndicesFromVertexData(model);
 
 	return meshBuffers;
 }
@@ -109,11 +108,9 @@ std::vector<unsigned short> convertDataToUIntBuffer(
 		reinterpret_cast<const unsigned short*>(&data[offset]),
 		reinterpret_cast<const unsigned short*>(&data[offset]) + numOfElements);
 }
-
-std::vector<Mesh> separateIndicesFromVertexData(const tinygltf::Model& model, std::shared_ptr<Shader> shader)
+std::vector<Mesh> separateIndicesFromVertexData(const tinygltf::Model& model)
 {
 	std::vector<Mesh> meshes;
-	unsigned int currentOffset = 0;
 
 
 	for (const auto& mesh : model.meshes)
@@ -237,19 +234,19 @@ std::vector<Mesh> separateIndicesFromVertexData(const tinygltf::Model& model, st
 							accessorCount * accessorAttribAmount);
 					if (attributeName.compare("POSITION") == 0)
 					{
-						positionBuffer.insert(std::end(positionBuffer), std::begin(vertexBuffer), std::end(vertexBuffer));
+						positionBuffer = std::move(vertexBuffer);
 					}
 					else if (attributeName.compare("TEXCOORD_0") == 0)
 					{
-						texCoordBuffer.insert(std::end(texCoordBuffer), std::begin(vertexBuffer), std::end(vertexBuffer));
+						texCoordBuffer = std::move(vertexBuffer);
 					}
 					else if (attributeName.compare("NORMAL") == 0)
 					{
-						normalBuffer.insert(std::end(normalBuffer), std::begin(vertexBuffer), std::end(vertexBuffer));
+						normalBuffer = std::move(vertexBuffer);
 					}
 					else if (attributeName.compare("TANGENT") == 0)
 					{
-						tangentBuffer.insert(std::end(tangentBuffer), std::begin(vertexBuffer), std::end(vertexBuffer));
+						tangentBuffer = std::move(vertexBuffer);
 					}
 
 
@@ -272,86 +269,83 @@ std::vector<Mesh> separateIndicesFromVertexData(const tinygltf::Model& model, st
 
 			float roughnessConstant = static_cast<float>(material.pbrMetallicRoughness.roughnessFactor);
 			float metallicConstant = static_cast<float>(material.pbrMetallicRoughness.metallicFactor);
-			std::shared_ptr<Texture> albedoTextureGPU = std::make_shared<Texture>(1.0f, 1.0f, 1.0f);
+			RawTexture albedoRawTexture({ 255,255,255 }, 1, 1, 3);
 			tinygltf::PbrMetallicRoughness pbrMetallicRoughness = material.pbrMetallicRoughness;
 			if (pbrMetallicRoughness.baseColorTexture.index != -1)
 			{
 				tinygltf::Texture albedoTexture = model.textures[pbrMetallicRoughness.baseColorTexture.index];
 				tinygltf::Image albedoImage = model.images[albedoTexture.source];
 
-				albedoTextureGPU =
-					std::make_shared<Texture>(
+				albedoRawTexture =
+					RawTexture(
+						albedoImage.image,
 						albedoImage.width,
 						albedoImage.height,
-						albedoImage.component,
-						albedoImage.image);
+						albedoImage.component
+					);
 			}
 
 
-			std::shared_ptr<Texture> metallicRoughnessTextureGPU = std::make_shared<Texture>(1.0f, 1.0f, 1.0f);
-
+			RawTexture metallicRoughnessRawTexture({ 255,255,255 }, 1, 1, 3);
 			if (pbrMetallicRoughness.metallicRoughnessTexture.index != -1)
 			{
 				tinygltf::Texture metallicRoughnessTexture = model.textures[pbrMetallicRoughness.metallicRoughnessTexture.index];
 				tinygltf::Image metallicRoughnessImage = model.images[metallicRoughnessTexture.source];
 
 
-				metallicRoughnessTextureGPU =
-					std::make_shared<Texture>(
+				metallicRoughnessRawTexture =
+					RawTexture(
+						metallicRoughnessImage.image,
 						metallicRoughnessImage.width,
 						metallicRoughnessImage.height,
-						metallicRoughnessImage.component,
-						metallicRoughnessImage.image);
+						metallicRoughnessImage.component
+					);
 			}
 
-			std::shared_ptr<Texture> normalTextureGPU = std::make_shared<Texture>(0.0f, 0.0f, 1.0f);//default normal direction
+			RawTexture normalRawTexture({
+				128,
+				128,
+				255 }, 1, 1, 3);//default normal direction
 
 			if (hasTangent)
 			{
 				tinygltf::Texture normalTexture = model.textures[material.normalTexture.index];
 				tinygltf::Image normalImage = model.images[normalTexture.source];
 
-				normalTextureGPU =
-					std::make_shared<Texture>(
+				normalRawTexture =
+					RawTexture(
+						normalImage.image,
 						normalImage.width,
 						normalImage.height,
-						normalImage.component,
-						normalImage.image);
+						normalImage.component);
 			}
-			std::shared_ptr<PBRMaterial> pbrMaterial =
-				std::make_shared<PBRMaterial>(
+			PBRMaterial pbrMaterial =
+				PBRMaterial(
 					albedo[0],
 					albedo[1],
 					albedo[2],
 					roughnessConstant,
 					metallicConstant,
-					albedoTextureGPU,
-					normalTextureGPU,
-					metallicRoughnessTextureGPU,
-					shader,
+					albedoRawTexture,
+					normalRawTexture,
+					metallicRoughnessRawTexture,
 					hasTangent
-					);
-			std::shared_ptr<VertexArray> vertexArray = std::make_shared<VertexArray>();
-			std::shared_ptr<IndexBuffer> indexBuffer =
-				std::make_shared<IndexBuffer>(
-					outputIndexBuffer.data(),
-					outputIndexBuffer.size(),
-					2);
+				);
 
-			std::vector<std::shared_ptr<VertexBuffer>> vertexBuffers =
-			{
-				std::make_shared<VertexBuffer>(positionBuffer.data(),positionBuffer.size() ,0,3),
-				std::make_shared<VertexBuffer>(texCoordBuffer.data(),texCoordBuffer.size() ,1,2),
-				std::make_shared<VertexBuffer>(normalBuffer.data(),normalBuffer.size() ,2,3),
-				std::make_shared<VertexBuffer>(tangentBuffer.data(),tangentBuffer.size() ,3,4)
-			};
-			vertexArray->setVertexBuffers(vertexBuffers);//to avoid vertexBuffer destruction
-
-
-			Mesh mesh({ SubMesh(indexBuffer, pbrMaterial) }, vertexArray);
-			meshes.push_back(mesh);
+			//Mesh outMesh({ SubMesh(outputIndexBuffer, pbrMaterial) }, {
+			//	positionBuffer,
+			//	texCoordBuffer,
+			//	normalBuffer,
+			//	tangentBuffer
+			//	});
+			meshes.push_back(Mesh({ SubMesh(outputIndexBuffer, pbrMaterial) }, {
+					positionBuffer,
+					texCoordBuffer,
+					normalBuffer,
+					tangentBuffer
+					}));
+			return meshes;
 		}
 	}
-
 	return meshes;
 }

@@ -9,22 +9,7 @@ enum class TextureType {
 	CUBE_MAP,
 	CUBE_MAP_DEPTH
 };
-class TextureData {
-public:
-	TextureData(
-		const unsigned int width,
-		const unsigned int height,
-		const unsigned int depth,
-		const unsigned int NumOfChannels,
-		const std::vector<unsigned short> data);
 
-	const int Width;
-	const int Height;
-	const int Depth;
-	const int NumOfChannels;
-	const std::vector<unsigned short> Data;
-private:
-};
 class Texture {
 public:
 	Texture() = delete;
@@ -32,7 +17,6 @@ public:
 	Texture(unsigned int width, unsigned int height, TextureType textureType);
 	Texture(unsigned int width, unsigned int height,unsigned int channels, const std::vector<unsigned char>& data);
 	Texture(const float red, const float green, const float blue);
-	Texture(const TextureData& data);
 	~Texture();
 	void bind(const unsigned int slot)const;
 	void unbind()const;

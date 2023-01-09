@@ -2,14 +2,21 @@
 #include<vector>
 #include<memory>
 #include"OGL4/IndexBuffer.h"
-#include"Material.h"
 #include"PBRMaterial.h"
 class SubMesh {
 public:
-	SubMesh(const std::shared_ptr<IndexBuffer> indexBuffer, const std::shared_ptr<Material> material);
-	std::shared_ptr<IndexBuffer> getIndexBufferID()const;
-	std::shared_ptr<Material> getMaterial()const;
+	SubMesh(std::vector<unsigned short> indexBuffer, PBRMaterial material);
+	PBRMaterial getMaterial()const;
+	std::vector<unsigned short> getIndexBuffer();
+	//GPU
+	void loadToGPU();
+	void bind()const;
+	unsigned int getCount()const;
 private:
-	std::shared_ptr<IndexBuffer> m_indexBufferID;
-	std::shared_ptr<Material> m_material;
+	std::vector<unsigned short> m_indexBufferArray;
+	PBRMaterial m_pbrMaterial;
+
+	bool inGPU = false;
+	//GPU
+	std::shared_ptr<IndexBuffer> m_indexArray;
 };

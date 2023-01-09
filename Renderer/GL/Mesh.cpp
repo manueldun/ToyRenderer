@@ -1,34 +1,44 @@
 #include"Mesh.h"
-#include <string>
 
-Mesh::Mesh(const std::vector<SubMesh>& subMeshes, const std::vector<float>& vertexBufferArray)
+Mesh::Mesh(
+	std::vector<SubMesh> subMeshes,
+	std::vector<std::vector<float>> vertexBufferArray)
 	:m_subMeshes(subMeshes),
-	m_vertexArray(std::unique_ptr<VertexArray>(new VertexArray))
+	m_vertexBufferArray(vertexBufferArray)
 {	
 
-	m_vertexArray->bind();
-	m_vertexBuffer =
-		std::make_shared<VertexBuffer>(
-			vertexBufferArray.data(),
-			vertexBufferArray.size(),
-			Utils::tangentLayout);
-	
-
 }
 
-Mesh::Mesh(const std::vector<SubMesh>& subMesh, const std::shared_ptr<VertexArray>& vertexArray)
-	:m_subMeshes(subMesh),
-	m_vertexArray(vertexArray)
-{
-
-}
-
-std::shared_ptr<VertexArray> Mesh::getVertexArray()const
-{
-	return m_vertexArray;
-}
 
 std::vector<SubMesh> Mesh::getSubMeshes() const
 {
 	return m_subMeshes;
+}
+
+void Mesh::loadToGPU()
+{	
+	inGPU = true;
+	std::vector<std::shared_ptr< VertexBuffer>> vertexBufferArray =
+	{
+		std::make_shared<VertexBuffer>(m_vertexBufferArray.at(0),0,3),
+		std::make_shared<VertexBuffer>(m_vertexBufferArray.at(1),1,2),
+		std::make_shared<VertexBuffer>(m_vertexBufferArray.at(2),2,3),
+		std::make_shared<VertexBuffer>(m_vertexBufferArray.at(3),3,4)
+	};
+
+	m_vertexArray = std::make_shared<VertexArray>(vertexBufferArray);
+	
+	for (auto& subMesh : m_subMeshes)
+	{
+		subMesh.loadToGPU();
+	}
+}
+void Mesh::bind() const
+{
+	if (inGPU)
+	{
+		m_vertexArray->bind();
+		
+		
+	}
 }

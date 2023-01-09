@@ -1,17 +1,13 @@
 #pragma once
-
+#include"tiny_gltf.h"
+#include<iostream>
 #include<vector>
-#include"PBRMaterial.h"
 #include"Mesh.h"
 #include"Utils.h"
-#include"tiny_gltf.h"
-#include"OGL4/Shader.h"
 std::vector<Mesh> convertToMeshes(
-	const std::vector<Utils::OBJData>& objData,
-	const std::vector<std::shared_ptr<Shader>>& shaders);
+	const std::vector<Utils::OBJData>& objData);
 std::vector<Mesh> convertToMeshes(
-	const tinygltf::Model& model,
-	const std::shared_ptr<Shader>& shader);
+	const tinygltf::Model& model);
 std::vector<float> convertDataToFloatBuffer(
 	const std::vector<unsigned char>& data,
 	size_t offset,
@@ -23,4 +19,4 @@ std::vector<unsigned short> convertDataToUIntBuffer(
 
 
 
-std::vector<Mesh> separateIndicesFromVertexData(const tinygltf::Model& model, std::shared_ptr<Shader> shader);
+std::vector<Mesh> separateIndicesFromVertexData(const tinygltf::Model& model);

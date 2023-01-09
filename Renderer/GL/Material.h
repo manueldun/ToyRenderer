@@ -6,7 +6,6 @@
 class Material {
 public:
 	virtual void bind() = 0;
-	virtual std::shared_ptr<Shader> getShader()=0;
 	virtual void setMaterialUniforms(std::shared_ptr<Shader> shader) = 0;
 	virtual std::shared_ptr<Texture> getNormalTexture() = 0;
 	virtual std::shared_ptr<Texture> getAlbedoTexture() = 0;

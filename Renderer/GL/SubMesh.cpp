@@ -2,18 +2,34 @@
 
 
 
-SubMesh::SubMesh(const std::shared_ptr<IndexBuffer> indexBuffer, const std::shared_ptr<Material> material)
-	: m_indexBufferID(indexBuffer), m_material(material)
+SubMesh::SubMesh(std::vector<unsigned short> indexBuffer,PBRMaterial material)
+	: m_indexBufferArray(indexBuffer), m_pbrMaterial(material)
 {
 }
 
-std::shared_ptr<IndexBuffer> SubMesh::getIndexBufferID() const
+PBRMaterial SubMesh::getMaterial() const
 {
-	return m_indexBufferID;
+	return m_pbrMaterial;
 }
 
-std::shared_ptr<Material> SubMesh::getMaterial() const
+std::vector<unsigned short> SubMesh::getIndexBuffer()
 {
-	return m_material;
+	return m_indexBufferArray;
 }
 
+void SubMesh::loadToGPU()
+{
+	inGPU = true;
+	m_indexArray = std::make_shared<IndexBuffer>(m_indexBufferArray.data(), m_indexBufferArray.size());
+	m_pbrMaterial.loadToGPU();
+
+}
+void SubMesh::bind() const
+{
+	m_indexArray->bind();
+}
+
+unsigned int SubMesh::getCount() const
+{
+	return m_indexArray->getCount();
+}

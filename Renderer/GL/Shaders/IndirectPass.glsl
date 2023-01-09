@@ -31,7 +31,7 @@ void main()
 #End
 #FragmentShader
 #line 33
-const unsigned int sampleCount = 400;
+const uint sampleCount = 400;
 
 
 uniform vec3 albedoConstant;
@@ -83,7 +83,7 @@ void main()
     mat3 TBN = mat3(pixelTangent,bitangent,pixelNormal);
     vec3 normalP = normalize(TBN*normalMap);
 	indirectFlux=vec3(0.0f);
-    for(unsigned int i=0;i<100;i++)
+    for(uint i=0;i<100;i++)
     {
 
     

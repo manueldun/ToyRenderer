@@ -14,7 +14,7 @@ VertexArray::VertexArray(const std::vector<std::shared_ptr<VertexBuffer>>& verte
 	bind();
 	for (const auto& vertexBuffer : vertexBuffers)
 	{
-		vertexBuffer->bind();
+		vertexBuffer->loadToGPU();
 	}
 }
 
