@@ -18,9 +18,9 @@ public:
 	//GPU
 	void loadToGPU();
 	void setMaterialUniforms(std::shared_ptr<Shader> shader) const;
-	RawTexture getAlbedoTexture()const;
-	RawTexture getNormalTexture()const;
-	RawTexture getRoughnessMetalnessTexture()const;
+	const RawTexture& getAlbedoTexture()const;
+	const RawTexture& getNormalTexture()const;
+	const RawTexture& getRoughnessMetalnessTexture()const;
 	std::vector<float> getAlbedoConstants()const;
 private:
 	bool m_hasTangent;

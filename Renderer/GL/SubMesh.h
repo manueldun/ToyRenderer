@@ -6,7 +6,7 @@
 class SubMesh {
 public:
 	SubMesh(std::vector<unsigned short> indexBuffer, PBRMaterial material);
-	PBRMaterial getMaterial()const;
+	const PBRMaterial& getMaterial()const;
 	std::vector<unsigned short> getIndexBuffer();
 	//GPU
 	void loadToGPU();

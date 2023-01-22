@@ -7,7 +7,7 @@ SubMesh::SubMesh(std::vector<unsigned short> indexBuffer,PBRMaterial material)
 {
 }
 
-PBRMaterial SubMesh::getMaterial() const
+const PBRMaterial& SubMesh::getMaterial() const
 {
 	return m_pbrMaterial;
 }

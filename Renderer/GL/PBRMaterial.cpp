@@ -54,19 +54,19 @@ void PBRMaterial::setMaterialUniforms(std::shared_ptr<Shader> shader) const
 	glUniform1i(shader->getUniformLocation("normalSampler"),2);
 }
 
-RawTexture PBRMaterial::getAlbedoTexture() const
+const RawTexture& PBRMaterial::getAlbedoTexture() const
 {
 
 	return m_albedoRawTexture;
 	
 }
 
-RawTexture PBRMaterial::getNormalTexture() const
+const RawTexture& PBRMaterial::getNormalTexture() const
 {
 	return m_normalRawTexture;
 }
 
-RawTexture PBRMaterial::getRoughnessMetalnessTexture() const
+const RawTexture& PBRMaterial::getRoughnessMetalnessTexture() const
 {
 	return m_roughnessMetalnessRawTexture;
 }

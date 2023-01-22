@@ -8,7 +8,7 @@ public:
 	Mesh(
 		std::vector<SubMesh> subMeshes,
 		std::vector<std::vector<float>> vertexBufferArray);
-	std::vector<SubMesh> getSubMeshes()const;
+	const std::vector<SubMesh>& getSubMeshes()const;
 	void loadToGPU();
 	void bind() const;
 private:

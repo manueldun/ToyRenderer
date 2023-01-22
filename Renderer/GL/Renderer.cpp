@@ -98,7 +98,7 @@ void Renderer::renderShadowMap(
 	unsigned int h = PositionTexture->getHeight();
 	unsigned int w = PositionTexture->getWidth();
 	glViewport(0, 0, w, h);
-	std::vector<SubMesh> subMeshes = mesh.getSubMeshes();
+	const std::vector<SubMesh>& subMeshes = mesh.getSubMeshes();
 	for (const auto& subMesh : subMeshes)
 	{
 		mesh.bind();
@@ -132,7 +132,7 @@ void Renderer::renderRMS(const float* projection, const float* view, const float
 	unsigned int h = IndirectLightTexture->getHeight();
 	unsigned int w = IndirectLightTexture->getWidth();
 	glViewport(0, 0, w, h);
-	std::vector<SubMesh> subMeshes = mesh.getSubMeshes();
+	const std::vector<SubMesh>& subMeshes = mesh.getSubMeshes();
 	for (const auto& subMesh : subMeshes)
 	{
 		mesh.bind();
@@ -179,7 +179,7 @@ void Renderer::renderGBuffer(const float* projection, const float* view, const M
 
 	const std::shared_ptr<Shader> gBufferShader = Renderer::getShader(ShaderType::GBUFFER);
 	GBufferFramebuffer->bind();
-	std::vector<SubMesh> subMeshes = mesh.getSubMeshes();
+	const std::vector<SubMesh>& subMeshes = mesh.getSubMeshes();
 	glViewport(0, 0, m_viewportWidth, m_viewportHeight);
 	for (const auto& subMesh : subMeshes)
 	{

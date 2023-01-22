@@ -83,9 +83,7 @@ std::vector<Mesh> convertToMeshes(const std::vector<Utils::OBJData>& objData, co
 
 std::vector<Mesh> convertToMeshes(const tinygltf::Model& model)
 {
-	std::vector<Mesh> meshBuffers = separateIndicesFromVertexData(model);
-
-	return meshBuffers;
+	return separateIndicesFromVertexData(model);
 }
 
 std::vector<float> convertDataToFloatBuffer(
@@ -344,7 +342,6 @@ std::vector<Mesh> separateIndicesFromVertexData(const tinygltf::Model& model)
 					normalBuffer,
 					tangentBuffer
 					}));
-			return meshes;
 		}
 	}
 	return meshes;

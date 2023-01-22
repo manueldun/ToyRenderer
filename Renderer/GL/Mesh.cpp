@@ -10,7 +10,7 @@ Mesh::Mesh(
 }
 
 
-std::vector<SubMesh> Mesh::getSubMeshes() const
+const std::vector<SubMesh>& Mesh::getSubMeshes() const
 {
 	return m_subMeshes;
 }
