@@ -1,5 +1,6 @@
 #include"GLApp.h"
 #include<iostream>
+#include<future>
 #include<glm/glm.hpp>
 #include<glm/ext/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale
 #include<glm/ext/matrix_clip_space.hpp> // glm::perspective
@@ -101,10 +102,9 @@ void GLApp::loop()
 	VertexArray::unbind();
 
 
+	std::future<std::vector<Mesh>> futureLoad = std::async(std::launch::async, []()->std::vector<Mesh> {
 
-	std::vector<Mesh> meshes;
-	{
-
+		std::vector<Mesh> meshes;
 		tinygltf::Model model;
 		tinygltf::TinyGLTF loader;
 		std::string err;
@@ -127,11 +127,14 @@ void GLApp::loop()
 		}
 
 		meshes = convertToMeshes(model);
-		for (auto& mesh : meshes)
-		{
-			mesh.loadToGPU();
-		}
-	}
+		//for (auto& mesh : meshes)
+		//{
+		//	mesh.loadToGPU();
+		//}
+
+		return meshes;
+		});
+
 
 
 
@@ -158,7 +161,7 @@ void GLApp::loop()
 		static float lightAngle2 = 90.0f;
 		static float lightScale = 2000.0f;
 		static float indirectSpan = 0.2f;
-		
+
 
 
 		const bool isWindowFocused = renderGUI(
@@ -187,16 +190,22 @@ void GLApp::loop()
 
 		glm::mat4 viewMatrix = m_cameraMouseController.control(static_cast<float>(deltaTime), static_cast<float>(xpos), static_cast<float>(ypos), !isWindowFocused);
 
-		for (const auto& mesh : meshes)
-		{
-			renderer.renderShadowMap(glm::value_ptr(shadowMatrix), mesh);
-		}
-		for (const auto& mesh : meshes)
-		{
-			renderer.renderGBuffer(glm::value_ptr(projectionMatrix), glm::value_ptr(viewMatrix), mesh);
-		}
+		//if (futureLoad.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready)
+		//{
+		//	std::vector<Mesh> meshes = futureLoad.get();
+		//	for (const auto& mesh : meshes)
+		//	{
+		//		renderer.renderShadowMap(glm::value_ptr(shadowMatrix), mesh);
+		//	}
+		//	for (const auto& mesh : meshes)
+		//	{
+		//		renderer.renderGBuffer(glm::value_ptr(projectionMatrix), glm::value_ptr(viewMatrix), mesh);
+		//	}
 
-		renderer.renderDeferredPass(glm::value_ptr(shadowMatrix), glm::value_ptr(lightDirection), glm::value_ptr(m_cameraMouseController.m_cameraPosition));
+		//	renderer.renderDeferredPass(glm::value_ptr(shadowMatrix), glm::value_ptr(lightDirection), glm::value_ptr(m_cameraMouseController.m_cameraPosition));
+
+		//}
+
 
 
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -217,12 +226,12 @@ void GLApp::cleanUp()
 }
 
 const bool GLApp::renderGUI(
-	float* const lightTranslatex, 
+	float* const lightTranslatex,
 	float* const lightTranslatey,
-	float* const lightTranslatez, 
+	float* const lightTranslatez,
 	float* const lightAngle1,
-	float* const lightAngle2, 
-	float* const lightScale, 
+	float* const lightAngle2,
+	float* const lightScale,
 	float* const indirectSpan,
 	unsigned int debugTextureID)
 {
