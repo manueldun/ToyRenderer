@@ -67,7 +67,7 @@ public:
 		const float* lightMatrix,
 		const float* lightDirection,
 		const float* cameraPosition) const;
-	const unsigned int ReflectiveShadowMapSize = 1024;
+	const unsigned int ReflectiveShadowMapSize = 2048;
 	const std::shared_ptr<Texture> PositionTexture =
 		std::make_shared<Texture>(ReflectiveShadowMapSize, ReflectiveShadowMapSize, TextureType::THREE_FLOAT);
 	const std::shared_ptr<Texture> NormalTexture =
