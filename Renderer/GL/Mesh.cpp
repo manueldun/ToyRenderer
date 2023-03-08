@@ -42,3 +42,8 @@ void Mesh::bind() const
 		
 	}
 }
+
+bool Mesh::isInGPU() const
+{
+	return inGPU;
+}

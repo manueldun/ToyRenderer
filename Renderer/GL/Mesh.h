@@ -11,6 +11,7 @@ public:
 	const std::vector<SubMesh>& getSubMeshes()const;
 	void loadToGPU();
 	void bind() const;
+	bool isInGPU() const;
 private:
 	std::vector<SubMesh> m_subMeshes;
 	const std::vector<std::vector<float>> m_vertexBufferArray;

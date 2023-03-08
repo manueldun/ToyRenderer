@@ -145,6 +145,8 @@ void GLApp::loop()
 	double oldTime = glfwGetTime();
 
 
+	std::vector<Mesh> meshes;
+	bool loaded = false;
 	while (!glfwWindowShouldClose(m_window))
 	{
 		glfwPollEvents();
@@ -190,23 +192,36 @@ void GLApp::loop()
 
 		glm::mat4 viewMatrix = m_cameraMouseController.control(static_cast<float>(deltaTime), static_cast<float>(xpos), static_cast<float>(ypos), !isWindowFocused);
 
-		//if (futureLoad.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready)
-		//{
-		//	std::vector<Mesh> meshes = futureLoad.get();
-		//	for (const auto& mesh : meshes)
-		//	{
-		//		renderer.renderShadowMap(glm::value_ptr(shadowMatrix), mesh);
-		//	}
-		//	for (const auto& mesh : meshes)
-		//	{
-		//		renderer.renderGBuffer(glm::value_ptr(projectionMatrix), glm::value_ptr(viewMatrix), mesh);
-		//	}
 
-		//	renderer.renderDeferredPass(glm::value_ptr(shadowMatrix), glm::value_ptr(lightDirection), glm::value_ptr(m_cameraMouseController.m_cameraPosition));
+		if (!loaded && futureLoad.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready)
+		{
+			loaded = true;
+			meshes = futureLoad.get();
+		}
+		if(loaded)
+		{
+			if (!meshes.at(0).isInGPU())
+			{
+				for (auto& mesh : meshes)
+				{
+					mesh.loadToGPU();
+				}
+			}
+			for (const auto& mesh : meshes)
+			{
+				renderer.renderShadowMap(glm::value_ptr(shadowMatrix), mesh);
+			}
+			for (const auto& mesh : meshes)
+			{
+				renderer.renderGBuffer(glm::value_ptr(projectionMatrix), glm::value_ptr(viewMatrix), mesh);
+			}
 
-		//}
+			renderer.renderDeferredPass(glm::value_ptr(shadowMatrix), glm::value_ptr(lightDirection), glm::value_ptr(m_cameraMouseController.m_cameraPosition));
+
+		}
 
 
+		Framebuffer::unbind();
 
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		glfwSwapBuffers(m_window);
