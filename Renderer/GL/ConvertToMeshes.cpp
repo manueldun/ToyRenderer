@@ -1,7 +1,8 @@
 #include"ConvertToMeshes.h"
-#include"SubMesh.h"
+#include"Mesh.h"
 #include"Material.h"
 #include"PBRMaterial.h"
+#include<unordered_map>
 //deprecated
 std::vector<Mesh> convertToMeshes(const std::vector<Utils::OBJData>& objData, const std::vector<std::shared_ptr<Shader>>& shaders)
 {
@@ -81,7 +82,7 @@ std::vector<Mesh> convertToMeshes(const std::vector<Utils::OBJData>& objData, co
 	return outputMeshes;
 }
 
-std::vector<Mesh> convertToMeshes(const tinygltf::Model& model)
+std::vector<Mesh> convertToMeshes(tinygltf::Model& model)
 {
 	return separateIndicesFromVertexData(model);
 }
@@ -106,11 +107,17 @@ std::vector<unsigned short> convertDataToUIntBuffer(
 		reinterpret_cast<const unsigned short*>(&data[offset]),
 		reinterpret_cast<const unsigned short*>(&data[offset]) + numOfElements);
 }
-std::vector<Mesh> separateIndicesFromVertexData(const tinygltf::Model& model)
+std::vector<Mesh> separateIndicesFromVertexData(tinygltf::Model& model)
 {
 	std::vector<Mesh> meshes;
 
+	std::shared_ptr<std::vector<unsigned char>> imageAlbedoPtr(nullptr);
+	std::shared_ptr<std::vector<unsigned char>> imageNormalPtr(nullptr);
+	std::shared_ptr<std::vector<unsigned char>> metallicRoughnessPtr(nullptr);
 
+	std::unordered_map<int, std::shared_ptr<std::vector<unsigned char>>> albedoMap;
+	std::unordered_map<int, std::shared_ptr<std::vector<unsigned char>>> normalMap;
+	std::unordered_map<int, std::shared_ptr<std::vector<unsigned char>>> metallicRoughnessMap;
 	for (const auto& mesh : model.meshes)
 	{
 
@@ -162,7 +169,7 @@ std::vector<Mesh> separateIndicesFromVertexData(const tinygltf::Model& model)
 			tinygltf::BufferView bufferView = model.bufferViews[indexAccessor.bufferView];
 			const std::size_t byteLength = bufferView.byteLength;
 			const std::size_t byteOffsetBufferView = bufferView.byteOffset;
-			tinygltf::Buffer rawIndexBuffer = model.buffers[bufferView.buffer];
+			tinygltf::Buffer& rawIndexBuffer = model.buffers[bufferView.buffer];
 
 			std::size_t elementOffset = (byteOffsetAccessor + byteOffsetBufferView);
 
@@ -180,7 +187,7 @@ std::vector<Mesh> separateIndicesFromVertexData(const tinygltf::Model& model)
 				try {
 					tinygltf::Accessor attributeAccessor = model.accessors[primitive.attributes.at(attributeName)];
 					tinygltf::BufferView attributeAccessorBufferView = model.bufferViews[attributeAccessor.bufferView];
-					tinygltf::Buffer attributeAccessorGltfBuffer = model.buffers[attributeAccessorBufferView.buffer];
+					tinygltf::Buffer& attributeAccessorGltfBuffer = model.buffers[attributeAccessorBufferView.buffer];
 					unsigned int accessorAttribAmount = 0;
 					unsigned int accessorAttribComponentAmount = 0;
 					unsigned int accessorType = attributeAccessor.type;
@@ -257,7 +264,7 @@ std::vector<Mesh> separateIndicesFromVertexData(const tinygltf::Model& model)
 			}
 
 
-			tinygltf::Material material = model.materials[primitive.material];
+			const tinygltf::Material& material = model.materials[primitive.material];
 			const float albedo[] = {
 				static_cast<float>(material.pbrMetallicRoughness.baseColorFactor.at(0)),
 				static_cast<float>(material.pbrMetallicRoughness.baseColorFactor.at(1)),
@@ -268,15 +275,18 @@ std::vector<Mesh> separateIndicesFromVertexData(const tinygltf::Model& model)
 			float roughnessConstant = static_cast<float>(material.pbrMetallicRoughness.roughnessFactor);
 			float metallicConstant = static_cast<float>(material.pbrMetallicRoughness.metallicFactor);
 			RawTexture albedoRawTexture({ 255,255,255 }, 1, 1, 3);
-			tinygltf::PbrMetallicRoughness pbrMetallicRoughness = material.pbrMetallicRoughness;
+			const tinygltf::PbrMetallicRoughness& pbrMetallicRoughness = material.pbrMetallicRoughness;
 			if (pbrMetallicRoughness.baseColorTexture.index != -1)
 			{
 				tinygltf::Texture albedoTexture = model.textures[pbrMetallicRoughness.baseColorTexture.index];
-				tinygltf::Image albedoImage = model.images[albedoTexture.source];
+				tinygltf::Image& albedoImage = model.images.at(albedoTexture.source);
+
+				if(!albedoMap.contains(albedoTexture.source))
+					albedoMap[albedoTexture.source] = std::make_shared<std::vector<unsigned char>>(std::move(albedoImage.image));
 
 				albedoRawTexture =
 					RawTexture(
-						albedoImage.image,
+						albedoMap.at(albedoTexture.source),
 						albedoImage.width,
 						albedoImage.height,
 						albedoImage.component
@@ -288,12 +298,14 @@ std::vector<Mesh> separateIndicesFromVertexData(const tinygltf::Model& model)
 			if (pbrMetallicRoughness.metallicRoughnessTexture.index != -1)
 			{
 				tinygltf::Texture metallicRoughnessTexture = model.textures[pbrMetallicRoughness.metallicRoughnessTexture.index];
-				tinygltf::Image metallicRoughnessImage = model.images[metallicRoughnessTexture.source];
+				tinygltf::Image& metallicRoughnessImage = model.images[metallicRoughnessTexture.source];
 
+				if (!metallicRoughnessMap.contains(metallicRoughnessTexture.source))
+					metallicRoughnessMap[metallicRoughnessTexture.source] = std::make_shared<std::vector<unsigned char>>(std::move(metallicRoughnessImage.image));
 
 				metallicRoughnessRawTexture =
 					RawTexture(
-						metallicRoughnessImage.image,
+						metallicRoughnessMap[metallicRoughnessTexture.source],
 						metallicRoughnessImage.width,
 						metallicRoughnessImage.height,
 						metallicRoughnessImage.component
@@ -308,40 +320,42 @@ std::vector<Mesh> separateIndicesFromVertexData(const tinygltf::Model& model)
 			if (hasTangent)
 			{
 				tinygltf::Texture normalTexture = model.textures[material.normalTexture.index];
-				tinygltf::Image normalImage = model.images[normalTexture.source];
+				tinygltf::Image& normalImage = model.images[normalTexture.source];
+
+
+				if (!normalMap.contains(normalTexture.source))
+					normalMap[normalTexture.source] = std::make_shared<std::vector<unsigned char>>(std::move(normalImage.image));
+
 
 				normalRawTexture =
 					RawTexture(
-						normalImage.image,
+						normalMap.at(normalTexture.source),
 						normalImage.width,
 						normalImage.height,
 						normalImage.component);
 			}
-			PBRMaterial pbrMaterial =
-				PBRMaterial(
-					albedo[0],
-					albedo[1],
-					albedo[2],
-					roughnessConstant,
-					metallicConstant,
-					albedoRawTexture,
-					normalRawTexture,
-					metallicRoughnessRawTexture,
-					hasTangent
-				);
+			PBRMaterial pbrMaterial(
+				albedo[0],
+				albedo[1],
+				albedo[2],
+				roughnessConstant,
+				metallicConstant,
+				std::move(albedoRawTexture),
+				std::move(normalRawTexture),
+				std::move(metallicRoughnessRawTexture),
+				hasTangent
+			);
 
-			//Mesh outMesh({ SubMesh(outputIndexBuffer, pbrMaterial) }, {
-			//	positionBuffer,
-			//	texCoordBuffer,
-			//	normalBuffer,
-			//	tangentBuffer
-			//	});
-			meshes.push_back(Mesh({ SubMesh(outputIndexBuffer, pbrMaterial) }, {
-					positionBuffer,
-					texCoordBuffer,
-					normalBuffer,
-					tangentBuffer
-					}));
+			std::vector<std::vector<float>> vertexBuffers;
+			vertexBuffers.push_back(std::move(positionBuffer));
+			vertexBuffers.push_back(std::move(texCoordBuffer));
+			vertexBuffers.push_back(std::move(normalBuffer));
+			vertexBuffers.push_back(std::move(tangentBuffer));
+			std::vector<SubMesh> subMeshes;
+			subMeshes.push_back(SubMesh(std::move(outputIndexBuffer), std::move(pbrMaterial)));
+			Mesh mesh1(std::move(subMeshes),
+				std::move(vertexBuffers));
+			meshes.push_back(std::move(mesh1));
 		}
 	}
 	return meshes;

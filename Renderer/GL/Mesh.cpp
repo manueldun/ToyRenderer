@@ -1,14 +1,21 @@
 #include"Mesh.h"
 
 Mesh::Mesh(
-	std::vector<SubMesh> subMeshes,
-	std::vector<std::vector<float>> vertexBufferArray)
+	const std::vector<SubMesh>& subMeshes,
+	const std::vector<std::vector<float>>& vertexBufferArrays)
 	:m_subMeshes(subMeshes),
-	m_vertexBufferArray(vertexBufferArray)
-{	
+	m_vertexBufferArray(vertexBufferArrays)
+{
 
 }
 
+Mesh::Mesh(std::vector<SubMesh>&& subMeshes, std::vector<std::vector<float>>&& vertexBufferArrays)
+	:m_subMeshes(std::move(subMeshes)),
+	m_vertexBufferArray(std::move(vertexBufferArrays))
+{
+
+
+}
 
 const std::vector<SubMesh>& Mesh::getSubMeshes() const
 {
@@ -16,7 +23,7 @@ const std::vector<SubMesh>& Mesh::getSubMeshes() const
 }
 
 void Mesh::loadToGPU()
-{	
+{
 	inGPU = true;
 	std::vector<std::shared_ptr< VertexBuffer>> vertexBufferArray =
 	{
@@ -27,7 +34,7 @@ void Mesh::loadToGPU()
 	};
 
 	m_vertexArray = std::make_shared<VertexArray>(vertexBufferArray);
-	
+
 	for (auto& subMesh : m_subMeshes)
 	{
 		subMesh.loadToGPU();
@@ -38,8 +45,8 @@ void Mesh::bind() const
 	if (inGPU)
 	{
 		m_vertexArray->bind();
-		
-		
+
+
 	}
 }
 

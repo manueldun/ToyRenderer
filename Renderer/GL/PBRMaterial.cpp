@@ -28,6 +28,29 @@ PBRMaterial::PBRMaterial(
 
 }
 
+PBRMaterial::PBRMaterial(
+	const float redAlbedo,
+	const float greenAlbedo,
+	const float blueAlbedo, 
+	const float roughness, 
+	const float metalness,
+	RawTexture&& albedoRawTexture, 
+	RawTexture&& normalRawTexture, 
+	RawTexture&& roughnessMetalnessRawTexture, 
+	const bool hasTangent)
+	:
+	m_redAlbedo(redAlbedo),
+	m_greenAlbedo(greenAlbedo),
+	m_blueAlbedo(blueAlbedo),
+	m_roughness(roughness),
+	m_metalness(metalness),
+	m_hasTangent(hasTangent),
+	m_albedoRawTexture(std::move(albedoRawTexture)),
+	m_normalRawTexture(std::move(normalRawTexture)),
+	m_roughnessMetalnessRawTexture(std::move(roughnessMetalnessRawTexture))
+{
+}
+
 
 
 void PBRMaterial::loadToGPU()

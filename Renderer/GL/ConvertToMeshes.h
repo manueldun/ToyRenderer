@@ -5,9 +5,7 @@
 #include"Mesh.h"
 #include"Utils.h"
 std::vector<Mesh> convertToMeshes(
-	const std::vector<Utils::OBJData>& objData);
-std::vector<Mesh> convertToMeshes(
-	const tinygltf::Model& model);
+	tinygltf::Model& model);
 std::vector<float> convertDataToFloatBuffer(
 	const std::vector<unsigned char>& data,
 	size_t offset,
@@ -19,4 +17,4 @@ std::vector<unsigned short> convertDataToUIntBuffer(
 
 
 
-std::vector<Mesh> separateIndicesFromVertexData(const tinygltf::Model& model);
+std::vector<Mesh> separateIndicesFromVertexData(tinygltf::Model& model);

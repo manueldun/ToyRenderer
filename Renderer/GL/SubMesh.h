@@ -5,7 +5,8 @@
 #include"PBRMaterial.h"
 class SubMesh {
 public:
-	SubMesh(std::vector<unsigned short> indexBuffer, PBRMaterial material);
+	SubMesh(const std::vector<unsigned short>& indexBuffer, const PBRMaterial& material);
+	SubMesh(std::vector<unsigned short>&& indexBuffer, PBRMaterial&& material);
 	const PBRMaterial& getMaterial()const;
 	std::vector<unsigned short> getIndexBuffer();
 	//GPU

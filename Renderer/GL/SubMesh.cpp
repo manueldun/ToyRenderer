@@ -2,8 +2,16 @@
 
 
 
-SubMesh::SubMesh(std::vector<unsigned short> indexBuffer,PBRMaterial material)
+SubMesh::SubMesh(const std::vector<unsigned short>& indexBuffer, const PBRMaterial& material)
 	: m_indexBufferArray(indexBuffer), m_pbrMaterial(material)
+{
+}
+
+SubMesh::SubMesh(
+	std::vector<unsigned short>&& indexBuffer,
+	PBRMaterial&& material)
+	: m_indexBufferArray(std::move(indexBuffer)),
+	m_pbrMaterial(std::move(material))
 {
 }
 

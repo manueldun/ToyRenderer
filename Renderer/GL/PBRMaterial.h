@@ -15,6 +15,16 @@ public:
 		const RawTexture& normalRawTexture,
 		const RawTexture& roughnessMetalnessRawTexture,
 		const bool hasTangent);
+	PBRMaterial(
+		const float redAlbedo,
+		const float greenAlbedo,
+		const float blueAlbedo,
+		const float roughness,
+		const float metalness,
+		RawTexture&& albedoRawTexture,
+		RawTexture&& normalRawTexture,
+		RawTexture&& roughnessMetalnessRawTexture,
+		const bool hasTangent);
 	//GPU
 	void loadToGPU();
 	void setMaterialUniforms(std::shared_ptr<Shader> shader) const;
