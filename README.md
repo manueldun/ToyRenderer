@@ -20,4 +20,8 @@ The application only loads and render the sponza 3d model with opengl 4.0 (the s
 - tinyGLTF
 - glad
 
-![screenshot1](\screenCapture\screenshot1.jpg)
+![screenshot1](/screenCapture/screenshot1.jpg)
+![screenshot1](/screenCapture/screenshot2.jpg)
+![screenshot1](/screenCapture/screenshot3.jpg)
+![screenshot1](/screenCapture/screenshot4.jpg)
+![screenshot1](/screenCapture/screenshot5.jpg)
