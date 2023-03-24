@@ -25,4 +25,3 @@ The application only loads and render the sponza 3d model with opengl 4.0 (the s
 ![screenshot1](/screenCapture/screenshot3.jpg)
 ![screenshot1](/screenCapture/screenshot4.jpg)
 ![screenshot1](/screenCapture/screenshot5.jpg)
-![screenshot1](/screenCapture/video.mp4)
