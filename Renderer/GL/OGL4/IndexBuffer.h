@@ -1,4 +1,5 @@
 #pragma once
+#include <stddef.h>
 class IndexBuffer {
 public:
 	IndexBuffer(const void* data, const size_t count);

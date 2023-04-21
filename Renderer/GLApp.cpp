@@ -21,7 +21,7 @@
 // #define TINYGLTF_NOEXCEPTION // optional. disable exception handling.
 #include"tinygltf/tiny_gltf.h" 
 
-#include"imGUI/ImGuiFileDialog.h"
+#include"imgui-filebrowser/imfilebrowser.h"
 
 std::vector<std::function<void(int, int, int)>> GLApp::m_mouseButtonCallbacks;
 
@@ -111,7 +111,7 @@ void GLApp::loop()
 		std::string warn;
 
 
-		bool ret = loader.LoadASCIIFromFile(&model, &err, &warn, "Assets/gltfSponza/sponza.gltf");
+		bool ret = loader.LoadASCIIFromFile(&model, &err, &warn, "Assets/gltfSponza/Sponza.gltf");
 
 		if (!warn.empty()) {
 			printf("Warn: %s\n", warn.c_str());

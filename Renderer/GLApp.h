@@ -9,8 +9,8 @@
 
 
 #include "imGUI/imgui.h"
-#include "imGUI/imgui_impl_glfw.h"
-#include "imGUI/imgui_impl_opengl3.h"
+#include "imGUI/backends/imgui_impl_glfw.h"
+#include "imGUI/backends/imgui_impl_opengl3.h"
 
 class GLApp {
 public:

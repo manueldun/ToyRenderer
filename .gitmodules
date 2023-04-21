@@ -1,0 +1,6 @@
+[submodule "Renderer/tinygltf"]
+	path = Renderer/tinygltf
+	url = https://github.com/syoyo/tinygltf.git
+[submodule "Renderer/imgui-filebrowser"]
+	path = Renderer/imgui-filebrowser
+	url = https://github.com/AirGuanZ/imgui-filebrowser.git
