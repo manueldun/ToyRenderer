@@ -13,7 +13,7 @@ The application only loads and render the sponza 3d model with opengl 4.0 (the s
 - Dear IMGUI integration
 - WASD camera control
 
-## Dependencies (included in the preository)
+## Dependencies (included in the repository)
 
 - GLFW
 - GLM
